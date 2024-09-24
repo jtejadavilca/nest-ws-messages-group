@@ -3,7 +3,10 @@ import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessa
 import { Socket } from 'net';
 import { Server } from "socket.io";
 
-@WebSocketGateway({cors: true})
+@WebSocketGateway({cors: {
+  origin: '*',
+  methods: ['GET', 'POST'],
+}})
 export class WsMessengerGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect 
 {
   private readonly logger = new Logger(WsMessengerGateway.name);
@@ -46,5 +49,12 @@ export class WsMessengerGateway implements OnGatewayInit, OnGatewayConnection, O
     console.log('data', data);
     console.log('client', client);
     return data;
+  }
+
+  @SubscribeMessage("ping")
+  handleMessagePing(client: any, data: any) {
+    this.logger.log(`Message received from client id: ${client.id}`);
+    this.logger.debug(`Payload: ${data}`);
+    this.io.emit('pong', {data: 'pong from server'});
   }
 }
